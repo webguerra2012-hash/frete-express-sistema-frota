@@ -2,13 +2,13 @@
 -- 1. Habilitar extensão para geração de IDs únicos (UUID)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. Limpar tabelas existentes (CUIDADO: isso apaga os dados atuais se as tabelas já existirem)
+-- 2. Limpar tabelas existentes para garantir compatibilidade
 DROP TABLE IF EXISTS maintenance_items;
 DROP TABLE IF EXISTS maintenances;
 DROP TABLE IF EXISTS occurrences;
+DROP TABLE IF EXISTS user_profiles;
 DROP TABLE IF EXISTS vehicles;
 DROP TABLE IF EXISTS settings;
-DROP TABLE IF EXISTS user_profiles;
 
 -- 3. Tabela de Veículos
 CREATE TABLE vehicles (
@@ -57,29 +57,33 @@ CREATE TABLE occurrences (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 7. Tabela de Configurações
+-- 7. Tabela de Usuários (Corrigida com Password e Vehicle Link)
+CREATE TABLE user_profiles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role TEXT DEFAULT 'motorista' CHECK (role IN ('admin', 'colaborador', 'motorista')),
+  assigned_vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 8. Tabela de Configurações
 CREATE TABLE settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
 
--- 8. Tabela de Usuários (Simplificada para protótipo)
-CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  email TEXT UNIQUE,
-  role TEXT DEFAULT 'colaborador' CHECK (role IN ('admin', 'colaborador', 'motorista'))
-);
-
--- 9. Inserir valores iniciais obrigatórios
+-- 9. Inserir valores iniciais
 INSERT INTO settings (key, value) VALUES 
 ('company_name', 'Frete Express Rio'),
-('logo_url', 'https://via.placeholder.com/150?text=FRETE+EXPRESS+RIO');
+('logo_url', 'https://via.placeholder.com/150?text=FRETE+RIO');
 
-INSERT INTO user_profiles (name, email, role) VALUES 
-('Administrador', 'admin@freteexpress.com', 'admin');
+-- Usuario admin inicial para primeiro acesso
+INSERT INTO user_profiles (name, email, password, role) VALUES 
+('Administrador', 'admin@freteexpress.com', 'admin123', 'admin');
 
--- 10. Desabilitar RLS para facilitar o teste inicial (Permite ler/gravar sem login complexo)
+-- 10. Desabilitar RLS
 ALTER TABLE vehicles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenances DISABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_items DISABLE ROW LEVEL SECURITY;
