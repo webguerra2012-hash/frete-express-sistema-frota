@@ -55,7 +55,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Para simulação de login
   role: 'admin' | 'colaborador' | 'motorista';
+  assigned_vehicle_id?: string;
 }
 
 export interface AppSettings {
