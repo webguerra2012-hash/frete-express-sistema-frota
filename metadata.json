@@ -1,0 +1,7 @@
+{
+  "name": "Frete Express Rio - Gestão de Frota",
+  "description": "Sistema completo para gerenciamento de manutenção, registro de ocorrências e controle de veículos da Frete Express Rio.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
